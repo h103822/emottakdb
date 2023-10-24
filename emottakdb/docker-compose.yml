@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  emottakoracle_s:
+    #image: container-registry.oracle.com/database/express:21.3.0-xe
+    container_name: emottakdb_c
+    build: ./emottakdb/oracle
+    #command: ["/bin/bash", "-c", "sqlplus system/oracle@xe @setup_database"]
+    environment:
+      - ORACLE_ALLOW_REMOTE=true
+      - ORACLE_DISABLE_ASYNCH_IO=true
+      - ORACLE_ENABLE_XDB=true
+      - IMPORT_FROM_VOLUME=true
+      - ORACLE_SID=XE
+      - ORACLE_USR=admin
+      - ORACLE_PWD=admin
+      - ORACLE_CHARACTERSET=AL32UTF8
+    ports:
+      - "8084:8080"
+      #- "5500:5500"
+      #- "49160:22"
+      #- "49161:1521"
+      - "1521:1521"
+    networks:
+      - oracle
+    volumes:
+      - ./emottakdb/oracle/docker-entrypoint-initdb.d:/opt/oracle/oradata
+      - ./emottakdb/oracle/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+
+  emottak-monitor_s:
+    container_name: emottak-monitor_c
+    build: ./emottak-monitor
+    #environment:
+      #- "DATABASE_URL=jdbc:oracle:thin:@//a01dbfl033.adeo.no:1521/emottak_q1"
+      #- "DATABASE_URL=jdbc:oracle:thin:@localhost:1521/XE"
+      #- "DATABASE_PREFIX=nmt2"
+      #- "EMOTTAK_ADMIN_FRONTEND_URL=http://localhost:3000"
+      #- "AZURE_APP_WELL_KNOWN_URL=https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0/.well-known/openid-configuration"
+    ports:
+      - "8080:8080"
+
+  emottak-monitor-frontend_s:
+    container_name: emottak-monitor-frontend_c
+    build: ./emottak-monitor-frontend
+    ports:
+      - "3000:8080"
+
+networks:
+  oracle:
